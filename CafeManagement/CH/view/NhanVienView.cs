@@ -45,94 +45,91 @@ namespace CH.View
         {
             this.BackColor = Color.White;
             this.Dock = DockStyle.Fill;
+            this.Padding = new Padding(30); // Tạo khoảng cách cho toàn bộ View
 
-            // ===== HEADER =====
-            Label lblTitle = new Label();
-            lblTitle.Text = "Quản Lý Nhân Viên";
-            lblTitle.Font = new Font("Segoe UI", 22, FontStyle.Bold);
-            lblTitle.ForeColor = COLOR_PRIMARY;
-            lblTitle.AutoSize = true;
-            lblTitle.Location = new Point(30, 20);
+            // --- 1. PANEL HEADER (Tiêu đề) ---
+            Panel pnlHeader = new Panel { Dock = DockStyle.Top, Height = 80 };
 
-            Label lblSub = new Label();
-            lblSub.Text = "Quản lý thông tin, chức vụ và tài khoản đăng nhập";
-            lblSub.Font = new Font("Segoe UI", 10);
-            lblSub.ForeColor = Color.Gray;
-            lblSub.AutoSize = true;
-            lblSub.Location = new Point(32, 65);
-
-            // ===== SEARCH =====
-            txtSearch = new TextBox();
-            txtSearch.Font = new Font("Segoe UI", 11);
-            txtSearch.Size = new Size(500, 35);
-            txtSearch.Location = new Point(35, 110);
-            txtSearch.Text = "🔍 Tìm kiếm theo tên nhân viên...";
-            txtSearch.ForeColor = Color.Gray;
-
-            txtSearch.Enter += (s, e) =>
+            Label lblTitle = new Label
             {
-                if (txtSearch.Text.Contains("🔍"))
-                {
-                    txtSearch.Text = "";
-                    txtSearch.ForeColor = Color.Black;
-                }
+                Text = "Quản Lý Nhân Viên",
+                Font = new Font("Segoe UI", 22, FontStyle.Bold),
+                ForeColor = COLOR_PRIMARY,
+                AutoSize = true,
+                Location = new Point(0, 0)
             };
 
-            txtSearch.Leave += (s, e) =>
+            Label lblSub = new Label
             {
-                if (string.IsNullOrWhiteSpace(txtSearch.Text))
-                {
-                    txtSearch.Text = "🔍 Tìm kiếm theo tên nhân viên...";
-                    txtSearch.ForeColor = Color.Gray;
-                }
+                Text = "Quản lý thông tin, chức vụ và tài khoản đăng nhập",
+                Font = new Font("Segoe UI", 10),
+                ForeColor = Color.Gray,
+                AutoSize = true,
+                Location = new Point(2, 45)
+            };
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSub });
+
+            // --- 2. PANEL ACTION (Tìm kiếm & Nút thêm) ---
+            Panel pnlAction = new Panel { Dock = DockStyle.Top, Height = 60 };
+
+            txtSearch = new TextBox
+            {
+                Font = new Font("Segoe UI", 11),
+                Size = new Size(400, 35),
+                Location = new Point(0, 10),
+                Text = "🔍 Tìm kiếm theo tên nhân viên...",
+                ForeColor = Color.Gray
             };
 
-            // ===== BUTTON THÊM =====
-            BtnThem = new Button();
-            BtnThem.Text = "+ Thêm Nhân Viên";
-            BtnThem.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            BtnThem.BackColor = COLOR_PRIMARY;
-            BtnThem.ForeColor = Color.White;
-            BtnThem.FlatStyle = FlatStyle.Flat;
+            txtSearch.Enter += (s, e) => {
+                if (txtSearch.Text.Contains("🔍")) { txtSearch.Text = ""; txtSearch.ForeColor = Color.Black; }
+            };
+            txtSearch.Leave += (s, e) => {
+                if (string.IsNullOrWhiteSpace(txtSearch.Text)) { txtSearch.Text = "🔍 Tìm kiếm theo tên nhân viên..."; txtSearch.ForeColor = Color.Gray; }
+            };
+
+            BtnThem = new Button
+            {
+                Text = "+ Thêm Nhân Viên",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                BackColor = COLOR_PRIMARY,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(180, 40),
+                // Anchor giúp nút luôn bám lề phải
+                Location = new Point(pnlAction.Width - 180, 5),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Cursor = Cursors.Hand
+            };
             BtnThem.FlatAppearance.BorderSize = 0;
-            BtnThem.Size = new Size(180, 40);
-            BtnThem.Location = new Point(700, 105);
 
-            // ===== TABLE =====
-            Table = new DataGridView();
-            Table.Location = new Point(35, 170);
-            Table.Size = new Size(980, 500);
+            pnlAction.Controls.AddRange(new Control[] { txtSearch, BtnThem });
 
-            Table.BackgroundColor = Color.White;
-            Table.BorderStyle = BorderStyle.None;
-
-            Table.AllowUserToAddRows = false;
-            Table.RowHeadersVisible = false;
-
-            Table.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            Table.MultiSelect = false;
-
-            Table.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            Table.RowTemplate.Height = 40;
-
-            Table.ColumnHeadersHeight = 45;
-            Table.EnableHeadersVisualStyles = false;
+            // --- 3. BẢNG DỮ LIỆU (Dock Fill - Tự động co dãn) ---
+            Table = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                AllowUserToAddRows = false,
+                RowHeadersVisible = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                RowTemplate = { Height = 45 },
+                ColumnHeadersHeight = 45,
+                EnableHeadersVisualStyles = false
+            };
 
             Table.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(242, 245, 248);
             Table.ColumnHeadersDefaultCellStyle.ForeColor = Color.Gray;
-            Table.ColumnHeadersDefaultCellStyle.Font =
-                new Font("Segoe UI", 10, FontStyle.Bold);
+            Table.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
-            Table.DefaultCellStyle.Font =
-                new Font("Segoe UI", 10);
+            Table.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            Table.DefaultCellStyle.SelectionBackColor = Color.FromArgb(204, 243, 229);
+            Table.DefaultCellStyle.SelectionForeColor = Color.FromArgb(0, 105, 92);
 
-            Table.DefaultCellStyle.SelectionBackColor =
-                Color.FromArgb(204, 243, 229);
-
-            Table.DefaultCellStyle.SelectionForeColor =
-                Color.FromArgb(0, 105, 92);
-
-            // ===== COLUMNS =====
+            // Thêm các cột
             Table.Columns.Add("MaNV", "Mã NV");
             Table.Columns.Add("TenNV", "Họ tên");
             Table.Columns.Add("NgaySinh", "Ngày sinh");
@@ -140,28 +137,25 @@ namespace CH.View
             Table.Columns.Add("ChucVu", "Chức vụ");
             Table.Columns.Add("SDT", "SĐT");
 
-            DataGridViewButtonColumn actionCol =
-                new DataGridViewButtonColumn();
-
-            actionCol.HeaderText = "Hành động";
-            actionCol.Text = "✎  🗑";
-            actionCol.UseColumnTextForButtonValue = true;
-
+            DataGridViewButtonColumn actionCol = new DataGridViewButtonColumn
+            {
+                HeaderText = "Hành động",
+                Text = "✎  🗑",
+                UseColumnTextForButtonValue = true,
+                Name = "btnAction",
+                Width = 80
+            };
             Table.Columns.Add(actionCol);
 
-            // ===== HIDDEN BUTTONS =====
             BtnSua = new Button();
             BtnXoa = new Button();
 
-            // ===== EVENT CLICK TABLE =====
             Table.CellClick += Table_CellClick;
 
-            // ===== ADD CONTROLS =====
-            this.Controls.Add(lblTitle);
-            this.Controls.Add(lblSub);
-            this.Controls.Add(txtSearch);
-            this.Controls.Add(BtnThem);
+            // --- 4. THÊM VÀO VIEW (Thứ tự quan trọng: Fill thêm trước, Top thêm sau) ---
             this.Controls.Add(Table);
+            this.Controls.Add(pnlAction);
+            this.Controls.Add(pnlHeader);
         }
 
         private void Table_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -199,14 +193,22 @@ namespace CH.View
         private void InitDialogForm()
         {
             DialogForm = new Form();
-
             DialogForm.Text = "Thông tin nhân viên";
-            DialogForm.Size = new Size(500, 720);
+            DialogForm.Size = new Size(500, 600); // Giảm chiều cao form chính
             DialogForm.StartPosition = FormStartPosition.CenterScreen;
             DialogForm.BackColor = Color.White;
+            DialogForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            DialogForm.MaximizeBox = false;
 
-            int top = 20;
+            // Sử dụng FlowLayoutPanel để các control tự động xếp chồng và có thanh cuộn nếu thiếu chỗ
+            FlowLayoutPanel mainContainer = new FlowLayoutPanel();
+            mainContainer.Dock = DockStyle.Fill;
+            mainContainer.FlowDirection = FlowDirection.TopDown;
+            mainContainer.WrapContents = false;
+            mainContainer.AutoScroll = true; // QUAN TRỌNG: Tạo thanh cuộn khi nội dung quá dài
+            mainContainer.Padding = new Padding(30, 20, 30, 20);
 
+            // Khởi tạo các components
             txtMaNV = CreateTextBox(false);
             txtTenNV = CreateTextBox();
             txtChucVu = CreateTextBox();
@@ -214,55 +216,80 @@ namespace CH.View
             txtDiaChi = CreateTextBox();
             txtUsername = CreateTextBox();
             txtPassword = CreateTextBox();
+            txtPassword.PasswordChar = '●'; // Ẩn mật khẩu
 
             dtNgaySinh = new DateTimePicker();
             dtNgaySinh.Format = DateTimePickerFormat.Short;
-            dtNgaySinh.Size = new Size(380, 35);
+            dtNgaySinh.Width = 400;
+            dtNgaySinh.Font = new Font("Segoe UI", 11);
 
-            rdoNam = new RadioButton();
-            rdoNam.Text = "Nam";
-
-            rdoNu = new RadioButton();
-            rdoNu.Text = "Nữ";
+            rdoNam = new RadioButton { Text = "Nam", AutoSize = true, Font = new Font("Segoe UI", 10) };
+            rdoNu = new RadioButton { Text = "Nữ", AutoSize = true, Font = new Font("Segoe UI", 10) };
 
             cboRole = new ComboBox();
-            cboRole.Items.AddRange(new string[]
-            {
-                "NHÂN VIÊN",
-                "ADMIN"
-            });
-
+            cboRole.DropDownStyle = ComboBoxStyle.DropDownList;
+            cboRole.Width = 400;
+            cboRole.Font = new Font("Segoe UI", 11);
+            cboRole.Items.AddRange(new string[] { "NHÂN VIÊN", "ADMIN" });
             cboRole.SelectedIndex = 0;
 
-            AddInput(DialogForm, "Mã nhân viên", txtMaNV, ref top);
-            AddInput(DialogForm, "Họ tên", txtTenNV, ref top);
-            AddInput(DialogForm, "Ngày sinh", dtNgaySinh, ref top);
+            // Thêm các ô nhập liệu vào Container
+            AddInputModern(mainContainer, "Mã nhân viên", txtMaNV);
+            AddInputModern(mainContainer, "Họ tên", txtTenNV);
+            AddInputModern(mainContainer, "Ngày sinh", dtNgaySinh);
 
-            FlowLayoutPanel genderPanel = new FlowLayoutPanel();
-            genderPanel.Size = new Size(380, 35);
+            // Gender Panel
+            Label lblGender = CreateLabelModern("Giới tính");
+            mainContainer.Controls.Add(lblGender);
+            FlowLayoutPanel genderPanel = new FlowLayoutPanel { Size = new Size(400, 35), Margin = new Padding(0, 0, 0, 15) };
             genderPanel.Controls.Add(rdoNam);
             genderPanel.Controls.Add(rdoNu);
+            mainContainer.Controls.Add(genderPanel);
 
-            AddInput(DialogForm, "Giới tính", genderPanel, ref top);
+            AddInputModern(mainContainer, "Chức vụ", txtChucVu);
+            AddInputModern(mainContainer, "SĐT", txtSDT);
+            AddInputModern(mainContainer, "Địa chỉ", txtDiaChi);
+            AddInputModern(mainContainer, "Tên đăng nhập", txtUsername);
+            AddInputModern(mainContainer, "Mật khẩu", txtPassword);
+            AddInputModern(mainContainer, "Quyền hạn", cboRole);
 
-            AddInput(DialogForm, "Chức vụ", txtChucVu, ref top);
-            AddInput(DialogForm, "SĐT", txtSDT, ref top);
-            AddInput(DialogForm, "Địa chỉ", txtDiaChi, ref top);
-            AddInput(DialogForm, "Username", txtUsername, ref top);
-            AddInput(DialogForm, "Password", txtPassword, ref top);
-            AddInput(DialogForm, "Quyền hạn", cboRole, ref top);
-
+            // Nút Lưu
             BtnLuu = new Button();
-            BtnLuu.Text = "Xác nhận lưu";
+            BtnLuu.Text = "XÁC NHẬN LƯU";
             BtnLuu.BackColor = COLOR_ACCENT;
             BtnLuu.ForeColor = Color.White;
             BtnLuu.FlatStyle = FlatStyle.Flat;
             BtnLuu.FlatAppearance.BorderSize = 0;
-            BtnLuu.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            BtnLuu.Size = new Size(380, 45);
-            BtnLuu.Location = new Point(40, top + 20);
+            BtnLuu.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+            BtnLuu.Size = new Size(400, 50);
+            BtnLuu.Cursor = Cursors.Hand;
+            BtnLuu.Margin = new Padding(0, 20, 0, 40);
 
-            DialogForm.Controls.Add(BtnLuu);
+            mainContainer.Controls.Add(BtnLuu);
+            DialogForm.Controls.Add(mainContainer);
+        }
+
+        // Các hàm bổ trợ để code sạch hơn
+        private void AddInputModern(Control parent, string title, Control input)
+        {
+            Label lbl = CreateLabelModern(title);
+            input.Margin = new Padding(0, 0, 0, 15); // Khoảng cách dưới mỗi ô nhập
+            input.Width = 400;
+
+            parent.Controls.Add(lbl);
+            parent.Controls.Add(input);
+        }
+
+        private Label CreateLabelModern(string text)
+        {
+            return new Label
+            {
+                Text = text,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = Color.FromArgb(64, 64, 64),
+                AutoSize = true,
+                Margin = new Padding(0, 5, 0, 3)
+            };
         }
 
         // ===== HELPER =====

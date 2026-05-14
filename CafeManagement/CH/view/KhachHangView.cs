@@ -1,48 +1,43 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Data;
 using CH.Model;
 
 namespace CH.View
 {
     public class KhachHangView : UserControl
     {
+ 
         private TextBox txtMaKH, txtTenKH, txtTheLoai, txtEmail, txtSDT, txtDiaChi, txtSearch;
         private RadioButton rdoNam, rdoNu;
-        private DataGridView table;
-        private DataTable model;
 
-        private Form dialogForm;
+        public DataGridView Table;
+        public Form DialogForm;
 
-        private Button btnThem, btnSua, btnXoa, btnLuu;
+        public Button BtnThem, BtnSua, BtnXoa, BtnLuu;
 
         private readonly Color COLOR_PRIMARY = Color.FromArgb(38, 70, 83);
         private readonly Color COLOR_ACCENT = Color.FromArgb(42, 157, 143);
-        private readonly Color COLOR_BG = Color.White;
 
         public KhachHangView()
         {
-            InitializeUI();
+            InitUI();
+            InitDialogForm();
         }
 
-        private void InitializeUI()
+        private void InitUI()
         {
-            Dock = DockStyle.Fill;
-            BackColor = COLOR_BG;
-            Padding = new Padding(30, 30, 30, 30);
+            this.BackColor = Color.White;
+            this.Dock = DockStyle.Fill;
+            this.Padding = new Padding(30); 
 
-            // ================= HEADER =================
-            Panel pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 70
-            };
+           
+            Panel pnlHeader = new Panel { Dock = DockStyle.Top, Height = 80 };
 
             Label lblTitle = new Label
             {
                 Text = "Quản Lý Khách Hàng",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Font = new Font("Segoe UI", 22, FontStyle.Bold),
                 ForeColor = COLOR_PRIMARY,
                 AutoSize = true,
                 Location = new Point(0, 0)
@@ -50,376 +45,211 @@ namespace CH.View
 
             Label lblSub = new Label
             {
-                Text = "Theo dõi thông tin, phân loại và lịch sử khách hàng",
-                Font = new Font("Segoe UI", 11),
+                Text = "Quản lý thông tin, phân loại và lịch sử giao dịch khách hàng",
+                Font = new Font("Segoe UI", 10),
                 ForeColor = Color.Gray,
                 AutoSize = true,
-                Location = new Point(3, 45)
+                Location = new Point(2, 45)
+            };
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSub });
+
+            // --- 2. PANEL ACTION (Chứa thanh tìm kiếm và nút thêm) ---
+            Panel pnlAction = new Panel { Dock = DockStyle.Top, Height = 60 };
+
+            txtSearch = new TextBox
+            {
+                Font = new Font("Segoe UI", 11),
+                Size = new Size(400, 35),
+                Location = new Point(0, 10),
+                Text = "🔍 Tìm kiếm theo tên hoặc mã khách hàng...",
+                ForeColor = Color.Gray
             };
 
-            pnlHeader.Controls.Add(lblTitle);
-            pnlHeader.Controls.Add(lblSub);
-
-            // ================= ACTION BAR =================
-            Panel pnlAction = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 60
+            txtSearch.Enter += (s, e) => {
+                if (txtSearch.Text.Contains("🔍")) { txtSearch.Text = ""; txtSearch.ForeColor = Color.Black; }
             };
 
-            txtSearch = CreateSearchField();
-            txtSearch.Location = new Point(0, 5);
+            txtSearch.Leave += (s, e) => {
+                if (string.IsNullOrWhiteSpace(txtSearch.Text)) { txtSearch.Text = "🔍 Tìm kiếm theo tên hoặc mã khách hàng..."; txtSearch.ForeColor = Color.Gray; }
+            };
 
-            btnThem = CreateButton("+ Thêm Khách Hàng", COLOR_PRIMARY);
-            btnThem.Size = new Size(180, 42);
-            btnThem.Location = new Point(800, 5);
-            btnSua = CreateButton("Sửa", COLOR_PRIMARY);
-            btnXoa = CreateButton("Xóa", Color.Red);
-
-            btnSua.Size = new Size(100, 42);
-            btnXoa.Size = new Size(100, 42);
-
-            btnSua.Location = new Point(1000, 5);
-            btnXoa.Location = new Point(1120, 5);
-
-            pnlAction.Controls.Add(btnSua);
-            pnlAction.Controls.Add(btnXoa);
-
-            pnlAction.Controls.Add(txtSearch);
-            pnlAction.Controls.Add(btnThem);
-
-            // ================= TABLE =================
-            table = new DataGridView
+            BtnThem = new Button
             {
-                Dock = DockStyle.Fill,
+                Text = "+ Thêm Khách Hàng",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                BackColor = COLOR_PRIMARY,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(180, 40),
+                // Anchor giúp nút luôn bám sát lề phải khi kéo to cửa sổ
+                Location = new Point(pnlAction.Width - 180, 5),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Cursor = Cursors.Hand
+            };
+            BtnThem.FlatAppearance.BorderSize = 0;
+
+            pnlAction.Controls.AddRange(new Control[] { txtSearch, BtnThem });
+
+            // --- 3. TABLE (Chiếm phần diện tích còn lại) ---
+            Table = new DataGridView
+            {
+                Dock = DockStyle.Fill, // Tự động to ra theo diện tích trống
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
-                AllowUserToResizeRows = false,
                 RowHeadersVisible = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                EnableHeadersVisualStyles = false,
-                Font = new Font("Segoe UI", 11),
+                RowTemplate = { Height = 45 }, // Tăng chiều cao dòng cho dễ nhìn
                 ColumnHeadersHeight = 45,
-                RowTemplate = { Height = 45 }
+                EnableHeadersVisualStyles = false
             };
 
-            table.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(242, 245, 248);
-            table.ColumnHeadersDefaultCellStyle.ForeColor = Color.Gray;
-            table.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            Table.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(242, 245, 248);
+            Table.ColumnHeadersDefaultCellStyle.ForeColor = Color.Gray;
+            Table.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
-            table.DefaultCellStyle.SelectionBackColor = Color.FromArgb(204, 243, 229);
-            table.DefaultCellStyle.SelectionForeColor = Color.FromArgb(0, 105, 92);
+            Table.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            Table.DefaultCellStyle.SelectionBackColor = Color.FromArgb(204, 243, 229);
+            Table.DefaultCellStyle.SelectionForeColor = Color.FromArgb(0, 105, 92);
 
-            model = new DataTable();
-            model.Columns.Add("Mã KH");
-            model.Columns.Add("Họ tên");
-            model.Columns.Add("Loại KH");
-            model.Columns.Add("Giới tính");
-            model.Columns.Add("Email");
-            model.Columns.Add("SĐT");
-            model.Columns.Add("Địa chỉ");
+            // Cột dữ liệu
+            Table.Columns.Add("MaKH", "Mã KH");
+            Table.Columns.Add("TenKH", "Họ tên");
+            Table.Columns.Add("Loai", "Phân loại");
+            Table.Columns.Add("GioiTinh", "Giới tính");
+            Table.Columns.Add("SDT", "Số điện thoại");
+            Table.Columns.Add("Email", "Email");
+            Table.Columns.Add("DiaChi", "Địa chỉ");
 
-            table.DataSource = model;
-
-            // Hover Effect
-            table.CellMouseEnter += (s, e) =>
+            DataGridViewButtonColumn actionCol = new DataGridViewButtonColumn
             {
-                if (e.RowIndex >= 0)
-                {
-                    table.Rows[e.RowIndex].DefaultCellStyle.BackColor =
-                        Color.FromArgb(245, 248, 250);
-                }
+                HeaderText = "Hành động",
+                Text = "✎  🗑",
+                UseColumnTextForButtonValue = true,
+                Name = "btnAction",
+                Width = 80
             };
+            Table.Columns.Add(actionCol);
 
-            table.CellMouseLeave += (s, e) =>
-            {
-                if (e.RowIndex >= 0 &&
-                    !table.Rows[e.RowIndex].Selected)
-                {
-                    table.Rows[e.RowIndex].DefaultCellStyle.BackColor =
-                        Color.White;
-                }
-            };
+            BtnSua = new Button();
+            BtnXoa = new Button();
 
-            // ================= MAIN =================
-            Controls.Add(table);
-            Controls.Add(pnlAction);
-            Controls.Add(pnlHeader);
-
-            btnSua = new Button();
-            btnXoa = new Button();
-
-            InitDialogForm();
+            // --- 4. THÊM VÀO VIEW (Thứ tự Add Table trước rồi đến Panels sau là chuẩn Winforms Dock) ---
+            this.Controls.Add(Table);
+            this.Controls.Add(pnlAction);
+            this.Controls.Add(pnlHeader);
         }
-
-        // =====================================================
-        // DIALOG FORM
-        // =====================================================
 
         private void InitDialogForm()
         {
-            dialogForm = new Form
+            DialogForm = new Form
             {
-                Size = new Size(500, 650),
+                Text = "Thông tin khách hàng",
+                Size = new Size(480, 600),
                 StartPosition = FormStartPosition.CenterScreen,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
                 BackColor = Color.White
             };
 
-            Panel container = new Panel
+            FlowLayoutPanel mainContainer = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(30)
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = true,
+                Padding = new Padding(30, 20, 30, 20)
             };
 
-            int top = 20;
+            txtMaKH = CreateTextBox(false);
+            txtTenKH = CreateTextBox();
+            txtTheLoai = CreateTextBox();
+            txtSDT = CreateTextBox();
+            txtEmail = CreateTextBox();
+            txtDiaChi = CreateTextBox();
 
-            txtMaKH = CreateTextField(false);
-            txtTenKH = CreateTextField(true);
-            txtTheLoai = CreateTextField(true);
-            txtEmail = CreateTextField(true);
-            txtSDT = CreateTextField(true);
-            txtDiaChi = CreateTextField(true);
+            rdoNam = new RadioButton { Text = "Nam", AutoSize = true, Font = new Font("Segoe UI", 10) };
+            rdoNu = new RadioButton { Text = "Nữ", AutoSize = true, Font = new Font("Segoe UI", 10) };
 
-            AddInput(container, "Mã khách hàng", txtMaKH, ref top);
-            AddInput(container, "Họ và tên", txtTenKH, ref top);
-            AddInput(container, "Phân loại", txtTheLoai, ref top);
+            // Thêm các ô nhập liệu
+            AddInputModern(mainContainer, "Mã khách hàng", txtMaKH);
+            AddInputModern(mainContainer, "Họ tên", txtTenKH);
+            AddInputModern(mainContainer, "Phân loại(Vip/Vãng lai)", txtTheLoai);
 
-            // Gender
-            Label lblGender = CreateLabel("Giới tính");
-            lblGender.Location = new Point(0, top);
+            mainContainer.Controls.Add(CreateLabelModern("Giới tính"));
+            FlowLayoutPanel genderPanel = new FlowLayoutPanel { Size = new Size(400, 35), Margin = new Padding(0, 0, 0, 15) };
+            genderPanel.Controls.AddRange(new Control[] { rdoNam, rdoNu });
+            mainContainer.Controls.Add(genderPanel);
 
-            Panel pnlGender = new Panel
+            AddInputModern(mainContainer, "Số điện thoại", txtSDT);
+            AddInputModern(mainContainer, "Email", txtEmail);
+            AddInputModern(mainContainer, "Địa chỉ", txtDiaChi);
+
+            BtnLuu = new Button
             {
-                Location = new Point(0, top + 25),
-                Size = new Size(300, 40)
-            };
-
-            rdoNam = new RadioButton
-            {
-                Text = "Nam",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(0, 5)
-            };
-
-            rdoNu = new RadioButton
-            {
-                Text = "Nữ",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(100, 5)
-            };
-
-            pnlGender.Controls.Add(rdoNam);
-            pnlGender.Controls.Add(rdoNu);
-
-            container.Controls.Add(lblGender);
-            container.Controls.Add(pnlGender);
-
-            top += 80;
-
-            AddInput(container, "Email", txtEmail, ref top);
-            AddInput(container, "Số điện thoại", txtSDT, ref top);
-            AddInput(container, "Địa chỉ", txtDiaChi, ref top);
-
-            btnLuu = CreateButton("Xác nhận Lưu", COLOR_ACCENT);
-            btnLuu.Size = new Size(380, 45);
-            btnLuu.Location = new Point(0, top + 20);
-
-            container.Controls.Add(btnLuu);
-
-            dialogForm.Controls.Add(container);
-        }
-
-        // =====================================================
-        // SUPPORT UI
-        // =====================================================
-
-        private TextBox CreateSearchField()
-        {
-            TextBox txt = new TextBox
-            {
-                Width = 750,
-                Height = 40,
-                Font = new Font("Segoe UI", 11),
-                Text = "🔍 Tìm tên hoặc mã khách hàng...",
-                ForeColor = Color.Gray
-            };
-
-            txt.Enter += (s, e) =>
-            {
-                if (txt.Text.Contains("🔍"))
-                {
-                    txt.Text = "";
-                    txt.ForeColor = Color.Black;
-                }
-            };
-
-            txt.Leave += (s, e) =>
-            {
-                if (string.IsNullOrWhiteSpace(txt.Text))
-                {
-                    txt.Text = "🔍 Tìm tên hoặc mã khách hàng...";
-                    txt.ForeColor = Color.Gray;
-                }
-            };
-
-            return txt;
-        }
-
-        private TextBox CreateTextField(bool enabled)
-        {
-            TextBox txt = new TextBox
-            {
-                Width = 380,
-                Height = 35,
-                Font = new Font("Segoe UI", 11),
-                Enabled = enabled
-            };
-
-            return txt;
-        }
-
-        private Label CreateLabel(string text)
-        {
-            return new Label
-            {
-                Text = text,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = Color.FromArgb(60, 60, 60),
-                AutoSize = true
-            };
-        }
-
-        private void AddInput(Control parent, string title, Control input, ref int top)
-        {
-            Label lbl = CreateLabel(title);
-            lbl.Location = new Point(0, top);
-
-            input.Location = new Point(0, top + 25);
-
-            parent.Controls.Add(lbl);
-            parent.Controls.Add(input);
-
-            top += 80;
-        }
-
-        private Button CreateButton(string text, Color bg)
-        {
-            Button btn = new Button
-            {
-                Text = text,
-                BackColor = bg,
+                Text = "XÁC NHẬN LƯU",
+                BackColor = COLOR_ACCENT,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Cursor = Cursors.Hand
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Size = new Size(400, 50),
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 20, 0, 40)
             };
+            BtnLuu.FlatAppearance.BorderSize = 0;
 
-            btn.FlatAppearance.BorderSize = 0;
-
-            return btn;
+            mainContainer.Controls.Add(BtnLuu);
+            DialogForm.Controls.Add(mainContainer);
         }
 
-        // =====================================================
-        // METHODS
-        // =====================================================
-
-        public void AddRow(KhachHang kh)
+        // ===== CÁC HÀM BỔ TRỢ (Đã đồng bộ hóa 100% với NhanVienView) =====
+        private void AddInputModern(Control parent, string title, Control input)
         {
-            model.Rows.Add(
-                kh.MaKH,
-                kh.TenKH,
-                kh.TheLoai,
-                kh.GioiTinh,
-                kh.Email,
-                kh.SoDienThoai,
-                kh.DiaChi
-            );
+            parent.Controls.Add(CreateLabelModern(title));
+            input.Margin = new Padding(0, 0, 0, 15);
+            input.Width = 400;
+            parent.Controls.Add(input);
         }
 
-        public void ClearTable()
+        private Label CreateLabelModern(string text) => new Label
         {
-            model.Rows.Clear();
-        }
+            Text = text,
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
+            ForeColor = Color.FromArgb(64, 64, 64),
+            AutoSize = true,
+            Margin = new Padding(0, 5, 0, 3)
+        };
 
+        private TextBox CreateTextBox(bool enabled = true) => new TextBox
+        {
+            Font = new Font("Segoe UI", 10),
+            Size = new Size(380, 35),
+            Enabled = enabled,
+            BackColor = enabled ? Color.White : Color.FromArgb(245, 245, 245)
+        };
+
+        // ===== METHODS CHO CONTROLLER =====
+        public void AddRow(KhachHang kh) => Table.Rows.Add(kh.MaKH, kh.TenKH, kh.TheLoai, kh.GioiTinh, kh.SoDienThoai,kh.Email,kh.DiaChi);
+        public void ClearTable() => Table.Rows.Clear();
+        public TextBox GetTxtSearch() => txtSearch;
         public void FillForm(KhachHang kh)
         {
-            txtMaKH.Text = kh.MaKH;
-            txtTenKH.Text = kh.TenKH;
-            txtTheLoai.Text = kh.TheLoai;
-            txtEmail.Text = kh.Email;
-            txtSDT.Text = kh.SoDienThoai;
-            txtDiaChi.Text = kh.DiaChi;
-
-            if (kh.GioiTinh == "Nam")
-                rdoNam.Checked = true;
-            else
-                rdoNu.Checked = true;
+            txtMaKH.Text = kh.MaKH; txtTenKH.Text = kh.TenKH; txtTheLoai.Text = kh.TheLoai;
+            txtSDT.Text = kh.SoDienThoai; txtEmail.Text = kh.Email; txtDiaChi.Text = kh.DiaChi;
+            if (kh.GioiTinh == "Nam") rdoNam.Checked = true; else rdoNu.Checked = true;
         }
-
         public void ClearForm()
         {
-            txtMaKH.Text = "Tự động sinh";
-            txtTenKH.Clear();
-            txtTheLoai.Clear();
-            txtEmail.Clear();
-            txtSDT.Clear();
-            txtDiaChi.Clear();
-
-            rdoNam.Checked = false;
-            rdoNu.Checked = false;
+            txtMaKH.Text = "Tự động sinh"; txtTenKH.Clear(); txtTheLoai.Clear();
+            txtSDT.Clear(); txtEmail.Clear(); txtDiaChi.Clear();
+            rdoNam.Checked = rdoNu.Checked = false;
         }
-
-        public KhachHang GetKhachHangInfo()
-        {
-            return new KhachHang(
-                txtMaKH.Text,
-                txtTenKH.Text,
-                txtTheLoai.Text,
-                rdoNam.Checked ? "Nam" : "Nữ",
-                txtEmail.Text,
-                txtSDT.Text,
-                txtDiaChi.Text
-            );
-        }
-
-        // =====================================================
-        // GETTERS
-        // =====================================================
-
-        public DataGridView GetTable() => table;
-
-        public Form GetDialogForm() => dialogForm;
-
-        public Button GetBtnThem() => btnThem;
-
-        public Button GetBtnSua() => btnSua;
-
-        public Button GetBtnXoa() => btnXoa;
-
-        public Button GetBtnLuu() => btnLuu;
-
-        public TextBox GetTxtSearch() => txtSearch;
-
-        public RadioButton GetRdoNam() => rdoNam;
-
-        public RadioButton GetRdoNu() => rdoNu;
-        public TextBox TxtSearch => txtSearch;
-        public DataGridView TableKhachHang => table;
-        public Button BtnThem => btnThem;
-        public Button BtnSua => btnSua;
-        public Button BtnXoa => btnXoa;
-        public Button BtnLuu => btnLuu;
-        public Form DialogForm => dialogForm;
-        public RadioButton RdoNam => rdoNam;
-        public RadioButton RdoNu => rdoNu;
-
-        public void SetMaKH(string ma)
-        {
-            txtMaKH.Text = ma;
-        }
+        public KhachHang GetKhachHangInfo() => new KhachHang(
+            txtMaKH.Text, txtTenKH.Text, txtTheLoai.Text,
+            rdoNam.Checked ? "Nam" : "Nữ",
+            txtEmail.Text, txtSDT.Text, txtDiaChi.Text
+        );
     }
 }

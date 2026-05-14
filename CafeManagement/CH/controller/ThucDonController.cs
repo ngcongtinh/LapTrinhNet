@@ -291,6 +291,8 @@ namespace CH.Controller
                     view.AddRow(m);
                 }
             }
+            view.Table.ClearSelection();
+            view.Table.CurrentCell = null;
         }
 
         // ===== RELOAD =====

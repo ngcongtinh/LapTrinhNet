@@ -65,158 +65,93 @@ namespace CH.view
             this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
             this.pnlHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tableChiTiet)).BeginInit();
             this.pnlFooter.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // pnlHeader
-            // 
+
+            // --- pnlHeader ---
             this.pnlHeader.BackColor = System.Drawing.Color.White;
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Controls.Add(this.lblMaHD);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlHeader.Location = new System.Drawing.Point(0, 0);
-            this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(970, 80);
-            this.pnlHeader.TabIndex = 0;
-            // 
+            this.pnlHeader.Height = 80;
+
             // lblTitle
-            // 
             this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
-            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(0, 77, 77);
             this.lblTitle.Location = new System.Drawing.Point(180, 10);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(245, 41);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Chi tiết hóa đơn";
-            // 
+            this.lblTitle.Text = "CHI TIẾT HÓA ĐƠN";
+
             // lblMaHD
-            // 
             this.lblMaHD.AutoSize = true;
             this.lblMaHD.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Italic);
             this.lblMaHD.Location = new System.Drawing.Point(20, 50);
-            this.lblMaHD.Name = "lblMaHD";
-            this.lblMaHD.Size = new System.Drawing.Size(83, 23);
-            this.lblMaHD.TabIndex = 1;
-            this.lblMaHD.Text = "Mã HĐ: ...";
-            // 
-            // tableChiTiet
-            // 
+            this.lblMaHD.Text = "Mã hóa đơn: ...";
+
+            // --- pnlFooter ---
+            this.pnlFooter.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.pnlFooter.Controls.Add(this.lblKhachHang);
+            this.pnlFooter.Controls.Add(this.lblTongTien);
+            this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlFooter.Height = 60;
+
+            // lblKhachHang
+            this.lblKhachHang.AutoSize = true;
+            this.lblKhachHang.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblKhachHang.Location = new System.Drawing.Point(20, 20);
+            this.lblKhachHang.Text = "Khách hàng: ...";
+
+            // lblTongTien
+           
+            this.lblTongTien.AutoSize = true;
+            this.lblTongTien.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lblTongTien.ForeColor = System.Drawing.Color.Black;
+            this.lblTongTien.Location = new System.Drawing.Point(380, 18);
+            this.lblTongTien.Text = "Tổng tiền: 0 VNĐ";
+
+            // --- tableChiTiet ---
             this.tableChiTiet.AllowUserToAddRows = false;
             this.tableChiTiet.BackgroundColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(230)))), ((int)(((byte)(230)))));
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.tableChiTiet.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.tableChiTiet.ColumnHeadersHeight = 29;
+            this.tableChiTiet.BorderStyle = BorderStyle.None;
+            this.tableChiTiet.Dock = System.Windows.Forms.DockStyle.Fill; // Chiếm phần còn lại ở giữa
+            this.tableChiTiet.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            this.tableChiTiet.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Tự động dãn cột
+            this.tableChiTiet.RowHeadersVisible = false; // Ẩn cột đầu dòng cho gọn
+
+            // Cấu hình các cột
+            this.dataGridViewTextBoxColumn1.HeaderText = "Tên món";
+            this.dataGridViewTextBoxColumn1.FillWeight = 150; // Cột này rộng hơn
+            this.dataGridViewTextBoxColumn2.HeaderText = "Size";
+            this.dataGridViewTextBoxColumn3.HeaderText = "Số lượng";
+            this.dataGridViewTextBoxColumn4.HeaderText = "Đơn giá";
+            this.dataGridViewTextBoxColumn5.HeaderText = "Thành tiền";
+
+            this.tableChiTiet.Columns.Clear();
             this.tableChiTiet.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn1,
             this.dataGridViewTextBoxColumn2,
             this.dataGridViewTextBoxColumn3,
             this.dataGridViewTextBoxColumn4,
-            this.dataGridViewTextBoxColumn5});
-            this.tableChiTiet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableChiTiet.EnableHeadersVisualStyles = false;
-            this.tableChiTiet.Location = new System.Drawing.Point(0, 0);
-            this.tableChiTiet.Name = "tableChiTiet";
-            this.tableChiTiet.ReadOnly = true;
-            this.tableChiTiet.RowHeadersWidth = 51;
-            this.tableChiTiet.RowTemplate.Height = 30;
-            this.tableChiTiet.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.tableChiTiet.Size = new System.Drawing.Size(970, 326);
-            this.tableChiTiet.TabIndex = 1;
-            // 
-            // pnlFooter
-            // 
-            this.pnlFooter.BackColor = System.Drawing.Color.White;
-            this.pnlFooter.Controls.Add(this.lblKhachHang);
-            this.pnlFooter.Controls.Add(this.lblTongTien);
-            this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlFooter.Location = new System.Drawing.Point(0, 326);
-            this.pnlFooter.Name = "pnlFooter";
-            this.pnlFooter.Size = new System.Drawing.Size(970, 70);
-            this.pnlFooter.TabIndex = 2;
-            // 
-            // lblKhachHang
-            // 
-            this.lblKhachHang.AutoSize = true;
-            this.lblKhachHang.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblKhachHang.Location = new System.Drawing.Point(20, 25);
-            this.lblKhachHang.Name = "lblKhachHang";
-            this.lblKhachHang.Size = new System.Drawing.Size(122, 23);
-            this.lblKhachHang.TabIndex = 0;
-            this.lblKhachHang.Text = "Khách hàng: ...";
-            // 
-            // lblTongTien
-            // 
-            this.lblTongTien.AutoSize = true;
-            this.lblTongTien.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblTongTien.Location = new System.Drawing.Point(350, 25);
-            this.lblTongTien.Name = "lblTongTien";
-            this.lblTongTien.Size = new System.Drawing.Size(123, 25);
-            this.lblTongTien.TabIndex = 1;
-            this.lblTongTien.Text = "Tổng tiền: ...";
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            this.dataGridViewTextBoxColumn1.HeaderText = "Tên món ăn";
-            this.dataGridViewTextBoxColumn1.MinimumWidth = 6;
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.ReadOnly = true;
-            this.dataGridViewTextBoxColumn1.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            this.dataGridViewTextBoxColumn2.HeaderText = "Size";
-            this.dataGridViewTextBoxColumn2.MinimumWidth = 6;
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            this.dataGridViewTextBoxColumn2.ReadOnly = true;
-            this.dataGridViewTextBoxColumn2.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.HeaderText = "Số lượng";
-            this.dataGridViewTextBoxColumn3.MinimumWidth = 6;
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            this.dataGridViewTextBoxColumn3.ReadOnly = true;
-            this.dataGridViewTextBoxColumn3.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            this.dataGridViewTextBoxColumn4.HeaderText = "Đơn giá";
-            this.dataGridViewTextBoxColumn4.MinimumWidth = 6;
-            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            this.dataGridViewTextBoxColumn4.ReadOnly = true;
-            this.dataGridViewTextBoxColumn4.Width = 125;
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.HeaderText = "Thành tiền";
-            this.dataGridViewTextBoxColumn5.MinimumWidth = 6;
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            this.dataGridViewTextBoxColumn5.ReadOnly = true;
-            this.dataGridViewTextBoxColumn5.Width = 125;
-            // 
-            // ChiTietHoaDonView
-            // 
-            this.ClientSize = new System.Drawing.Size(970, 396);
-            this.Controls.Add(this.pnlHeader);
-            this.Controls.Add(this.tableChiTiet);
-            this.Controls.Add(this.pnlFooter);
-            this.Name = "ChiTietHoaDonView";
+            this.dataGridViewTextBoxColumn5
+    });
+
+            // --- ChiTietHoaDonView (Form chính) ---
+            this.ClientSize = new System.Drawing.Size(650, 500); // Kích thước hợp lý
+
+            // QUAN TRỌNG: Thứ tự thêm control ảnh hưởng đến Dock
+            this.Controls.Add(this.tableChiTiet); // Add table trước để Dock.Fill chiếm chỗ giữa
+            this.Controls.Add(this.pnlHeader);   // Header Dock Top
+            this.Controls.Add(this.pnlFooter);   // Footer Dock Bottom
+
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tableChiTiet)).EndInit();
             this.pnlFooter.ResumeLayout(false);
             this.pnlFooter.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         // =======================================================

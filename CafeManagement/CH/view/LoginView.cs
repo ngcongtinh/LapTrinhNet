@@ -41,7 +41,7 @@ namespace CH.View
             // ================= CARD =================
             Panel card = new Panel
             {
-                Size = new Size(400, 300),
+                Size = new Size(420, 320),
                 BackColor = PANEL_COLOR,
                 BorderStyle = BorderStyle.FixedSingle
             };
@@ -57,13 +57,14 @@ namespace CH.View
             Label lblTitle = new Label
             {
                 Text = "HỆ THỐNG QUẢN LÝ QUÁN DINOCOFFEE",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Font = new Font("Segoe UI", 15, FontStyle.Bold),
                 ForeColor = PRIMARY_COLOR,
+
                 AutoSize = false,
-                Width = 360,
-                Height = 50,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Location = new Point(20, 20)
+                Dock = DockStyle.Top,
+                Height = 60,
+
+                TextAlign = ContentAlignment.MiddleCenter
             };
 
             card.Controls.Add(lblTitle);

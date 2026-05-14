@@ -83,7 +83,7 @@ namespace CH.View
             txtTuNgay = CreateStyledTextBox("01/01/2025");
             txtTuNgay.Location = new Point(160, 12);
 
-            txtDenNgay = CreateStyledTextBox("31/12/2025");
+            txtDenNgay = CreateStyledTextBox("31/12/2026");
             txtDenNgay.Location = new Point(330, 12);
 
             btnXemBaoCao = CreatePrimaryButton("Xem báo cáo");
@@ -149,26 +149,28 @@ namespace CH.View
         }
 
         // ================= STAT CARD =================
+        // ================= STAT CARD (Đã fix rộng hơn) =================
         private Panel CreateStatCard(string title)
         {
             Panel card = new Panel();
-            card.Size = new Size(500, 110);
+            // Tăng Width lên 650 hoặc cao hơn tùy màn hình để không bị tràn chữ
+            card.Size = new Size(650, 130);
             card.BackColor = COLOR_CARD;
-            card.BorderStyle = BorderStyle.FixedSingle;
+         
 
             Label lblTitle = new Label();
             lblTitle.Text = title;
-            lblTitle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblTitle.Font = new Font("Segoe UI", 11, FontStyle.Bold); // Tăng size tiêu đề
             lblTitle.ForeColor = Color.Gray;
             lblTitle.AutoSize = true;
-            lblTitle.Location = new Point(20, 20);
+            lblTitle.Location = new Point(25, 20);
 
             lblValueTong = new Label();
-            lblValueTong.Text = "0 VNĐ";
-            lblValueTong.Font = new Font("Segoe UI", 22, FontStyle.Bold);
+            lblValueTong.Text = "TỔNG DOANH THU: 0 VNĐ"; // Gán text mặc định có đủ độ dài
+            lblValueTong.Font = new Font("Segoe UI", 26, FontStyle.Bold); // Font to rõ rệt
             lblValueTong.ForeColor = COLOR_ACCENT;
             lblValueTong.AutoSize = true;
-            lblValueTong.Location = new Point(20, 50);
+            lblValueTong.Location = new Point(22, 55);
 
             card.Controls.Add(lblTitle);
             card.Controls.Add(lblValueTong);

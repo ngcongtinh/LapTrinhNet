@@ -18,7 +18,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
                 string sql = "SELECT * FROM KhachHang";
 
@@ -60,7 +59,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
                 string sql = "SELECT * FROM KhachHang WHERE MaKH=@MaKH";
 
@@ -107,7 +105,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
 
                 // Tự động sinh mã
@@ -155,7 +152,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
                 string sql = @"
                 UPDATE KhachHang
@@ -198,7 +194,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
                 string sql = "DELETE FROM KhachHang WHERE MaKH=@MaKH";
 
@@ -229,7 +224,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
                 string sql =
                     "SELECT MaKH FROM KhachHang ORDER BY MaKH DESC LIMIT 1";
@@ -301,7 +295,6 @@ namespace CH.dao
             try
             {
                 MySqlConnection cons = DBConnection.GetConnection();
-                cons.Open();
 
                 string sql =
                     "SELECT COUNT(*) FROM KhachHang WHERE SoDienThoai=@sdt";

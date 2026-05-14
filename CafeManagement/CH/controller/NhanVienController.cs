@@ -248,6 +248,8 @@ namespace CH.Controller
                     ""
                 });
             }
+            view.Table.ClearSelection();
+            view.Table.CurrentCell = null;
         }
     }
 }

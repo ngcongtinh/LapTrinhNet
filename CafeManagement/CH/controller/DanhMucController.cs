@@ -29,40 +29,51 @@ namespace CH.Controller
             LoadDataToView();
 
             // Event: Thêm mới
-            view.GetBtnThem().Click += (s, e) => {
+            view.BtnThem.Click += (s, e) => {
                 isEdit = false;
                 view.ClearForm();
-                view.GetDialogForm().Text = "Thêm Danh Mục";
+                view.GetDialogForm().Text = "Thêm Danh Mục Mới";
                 view.GetDialogForm().ShowDialog();
             };
 
-            // Event: Lưu
-            view.GetBtnLuu().Click += SaveData;
-
-            // Event: Tìm kiếm
-            view.GetTxtSearch().TextChanged += (s, e) => {
-                string keyword = view.GetTxtSearch().Text.Replace("🔍", "").Trim();
-                LoadDataWithFilter(keyword);
-            };
-
-            // Event: Xử lý nút Sửa/Xóa ngay trên từng dòng Table
-            view.GetTable().CellContentClick += (s, e) => {
-                if (e.RowIndex < 0) return;
-
-                string colName = view.GetTable().Columns[e.ColumnIndex].Name;
-                string ma = view.GetTable().Rows[e.RowIndex].Cells["MaDM"].Value.ToString();
-                string ten = view.GetTable().Rows[e.RowIndex].Cells["TenDM"].Value.ToString();
-
-                if (colName == "btnSua")
+            // Event: Sửa (Được gọi từ Menu chuột phải trong View)
+            view.BtnSua.Click += (s, e) => {
+                if (view.GetTable().SelectedRows.Count > 0)
                 {
                     isEdit = true;
+                    var row = view.GetTable().SelectedRows[0];
+                    string ma = row.Cells["MaDM"].Value.ToString();
+                    string ten = row.Cells["TenDM"].Value.ToString();
+
                     view.SetForm(ma, ten);
                     view.GetDialogForm().Text = "Chỉnh Sửa Danh Mục";
                     view.GetDialogForm().ShowDialog();
                 }
-                else if (colName == "btnXoa")
+            };
+
+            // Event: Xóa (Được gọi từ Menu chuột phải trong View)
+            view.BtnXoa.Click += (s, e) => {
+                if (view.GetTable().SelectedRows.Count > 0)
                 {
+                    string ma = view.GetTable().SelectedRows[0].Cells["MaDM"].Value.ToString();
                     DeleteData(ma);
+                }
+            };
+
+            // Event: Lưu
+            view.BtnLuu.Click += SaveData;
+
+            // Event: Tìm kiếm
+            view.GetTxtSearch().TextChanged += (s, e) =>
+            {
+                string keyword = view.GetTxtSearch().Text.Trim();
+                if (keyword == "🔍 Tìm kiếm danh mục..." || string.IsNullOrEmpty(keyword))
+                {
+                    LoadDataToView();
+                }
+                else
+                {
+                    LoadDataWithFilter(keyword);
                 }
             };
         }
@@ -74,22 +85,16 @@ namespace CH.Controller
 
             if (string.IsNullOrEmpty(ten))
             {
-                MessageBox.Show("Vui lòng nhập tên danh mục!");
+                MessageBox.Show("Vui lòng nhập tên danh mục!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (!Regex.IsMatch(ten, @"^[\p{L}\s\d]+$"))
-            {
-                MessageBox.Show("Tên không được chứa ký tự đặc biệt!");
-                return;
-            }
-
-            // Kiểm tra trùng tên (có ngoại trừ trường hợp đang sửa chính nó)
+            // Kiểm tra trùng tên (Ngoại trừ trường hợp đang sửa chính nó)
             if (dao.IsExistsTenDanhMuc(ten))
             {
                 if (!isEdit || (isEdit && !ten.Equals(GetTenCuFromTable(ma))))
                 {
-                    MessageBox.Show("Tên danh mục này đã tồn tại!");
+                    MessageBox.Show("Tên danh mục này đã tồn tại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             }
@@ -104,14 +109,14 @@ namespace CH.Controller
             }
             else
             {
-                MessageBox.Show("Thao tác thất bại!");
+                MessageBox.Show("Thao tác thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void DeleteData(string ma)
         {
-            if (MessageBox.Show($"Xóa danh mục {ma}?", "Xác nhận",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa danh mục {ma}",
+                "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 if (dao.Delete(ma))
                 {
@@ -120,7 +125,7 @@ namespace CH.Controller
                 }
                 else
                 {
-                    MessageBox.Show("Không thể xóa danh mục đang chứa món ăn!");
+                    MessageBox.Show("Không thể xóa danh mục này (có thể đang chứa món ăn)!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
@@ -129,6 +134,8 @@ namespace CH.Controller
         {
             view.ClearTable();
             foreach (string[] dm in dao.GetAll()) view.AddRow(dm);
+            view.GetTable().ClearSelection();
+            view.GetTable().CurrentCell = null;
         }
 
         private void LoadDataWithFilter(string keyword)
@@ -137,15 +144,19 @@ namespace CH.Controller
             string key = RemoveAccent(keyword.ToLower());
             foreach (string[] dm in dao.GetAll())
             {
-                if (string.IsNullOrEmpty(key) || RemoveAccent(dm[1].ToLower()).Contains(key))
+                if (RemoveAccent(dm[1].ToLower()).Contains(key) || dm[0].ToLower().Contains(key))
                     view.AddRow(dm);
             }
+
         }
 
         private string GetTenCuFromTable(string ma)
         {
             foreach (DataGridViewRow row in view.GetTable().Rows)
-                if (row.Cells["MaDM"].Value.ToString() == ma) return row.Cells["TenDM"].Value.ToString();
+            {
+                if (row.Cells["MaDM"].Value?.ToString() == ma)
+                    return row.Cells["TenDM"].Value?.ToString();
+            }
             return "";
         }
 
@@ -155,8 +166,10 @@ namespace CH.Controller
             int max = 0;
             foreach (var dm in list)
             {
-                int.TryParse(dm[0].Substring(2), out int so);
-                if (so > max) max = so;
+                if (dm[0].Length > 2 && int.TryParse(dm[0].Substring(2), out int so))
+                {
+                    if (so > max) max = so;
+                }
             }
             return $"DM{(max + 1):00}";
         }

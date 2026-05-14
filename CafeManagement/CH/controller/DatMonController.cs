@@ -234,7 +234,6 @@ namespace CH.controller
             {
                 conn = DBConnection.GetConnection();
 
-                conn.Open();
 
                 trans = conn.BeginTransaction();
 

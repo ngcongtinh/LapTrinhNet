@@ -7,32 +7,26 @@ namespace CH.View
 {
     public partial class XacNhanThanhToanDialog : Form
     {
-        private TextBox txtTenKhach;
-        private TextBox txtSDT;
-
+        private TextBox txtTenKhach, txtSDT;
         private Label lblTongTienFinal;
-
         private Button btnXacNhanIn;
-
         private DataGridView dgvReview;
 
+        // Bảng màu hiện đại
+        private readonly Color COLOR_PRIMARY = Color.FromArgb(38, 70, 83);
+        private readonly Color COLOR_ACCENT = Color.FromArgb(42, 157, 143);
+        private readonly Color COLOR_BG = Color.FromArgb(248, 249, 250);
 
-        public XacNhanThanhToanDialog(
-            double tongTien,
-            List<object[]> gioHang)
+        public XacNhanThanhToanDialog(double tongTien, List<object[]> gioHang)
         {
-            Text = "Xác nhận Thanh Toán";
-
-            Size = new Size(400, 550);
-
-            StartPosition = FormStartPosition.CenterParent;
-
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-
-            MaximizeBox = false;
-            MinimizeBox = false;
-
-            BackColor = Color.White;
+            this.Text = "HÓA ĐƠN TẠM TÍNH";
+            this.Size = new Size(450, 650);
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.BackColor = COLOR_BG;
+            this.Font = new Font("Segoe UI", 10);
 
             InitializeUI(gioHang, tongTien);
         }
@@ -40,167 +34,136 @@ namespace CH.View
         private void InitializeUI(List<object[]> gioHangRows, double tongTien)
         {
             // =========================
-            // HEADER
+            // HEADER - THÔNG TIN KHÁCH
             // =========================
-            Panel pnlHead = new Panel();
-            pnlHead.Dock = DockStyle.Top;
-            pnlHead.Height = 140;
-            pnlHead.Padding = new Padding(10);
+            Panel pnlHead = new Panel { Dock = DockStyle.Top, Height = 160, Padding = new Padding(25, 20, 25, 0) };
 
-            Label lblTenKhach = new Label();
-            lblTenKhach.Text = "Tên khách hàng:";
-            lblTenKhach.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            lblTenKhach.AutoSize = true;
-            lblTenKhach.Location = new Point(10, 10);
+            Label lblHeaderTitle = new Label
+            {
+                Text = "THÔNG TIN KHÁCH HÀNG",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.Gray,
+                AutoSize = true,
+                Location = new Point(25, 15)
+            };
 
-            txtTenKhach = new TextBox();
-            txtTenKhach.Text = "Khách vãng lai";
-            txtTenKhach.Font = new Font("Segoe UI", 10);
-            txtTenKhach.Size = new Size(340, 30);
-            txtTenKhach.Location = new Point(10, 35);
+            txtTenKhach = CreateStyledTextBox("Khách vãng lai", new Point(25, 45), 380);
 
-            Label lblSDT = new Label();
-            lblSDT.Text = "Số điện thoại (Để tìm kiếm):";
-            lblSDT.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            lblSDT.AutoSize = true;
-            lblSDT.Location = new Point(10, 75);
+            Label lblSDTTitle = new Label
+            {
+                Text = "SỐ ĐIỆN THOẠI",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.Gray,
+                AutoSize = true,
+                Location = new Point(25, 90)
+            };
 
-            txtSDT = new TextBox();
-            txtSDT.Font = new Font("Segoe UI", 10);
-            txtSDT.Size = new Size(340, 30);
-            txtSDT.Location = new Point(10, 100);
+            txtSDT = CreateStyledTextBox("", new Point(25, 115), 380);
 
-            pnlHead.Controls.Add(lblTenKhach);
-            pnlHead.Controls.Add(txtTenKhach);
-
-            pnlHead.Controls.Add(lblSDT);
-            pnlHead.Controls.Add(txtSDT);
-
-            Controls.Add(pnlHead);
+            pnlHead.Controls.AddRange(new Control[] { lblHeaderTitle, txtTenKhach, lblSDTTitle, txtSDT });
 
             // =========================
-            // CENTER - GIỎ HÀNG
+            // CENTER - CHI TIẾT ĐƠN HÀNG
             // =========================
-            dgvReview = new DataGridView();
+            Panel pnlGridContainer = new Panel { Dock = DockStyle.Fill, Padding = new Padding(25, 10, 25, 10) };
 
-            dgvReview.Dock = DockStyle.Fill;
+            dgvReview = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                AllowUserToAddRows = false,
+                RowHeadersVisible = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                EnableHeadersVisualStyles = false,
+                GridColor = Color.FromArgb(240, 240, 240),
+                ReadOnly = true
+            };
 
-            dgvReview.BackgroundColor = Color.White;
-
-            dgvReview.AllowUserToAddRows = false;
-            dgvReview.ReadOnly = true;
-
-            dgvReview.AutoSizeColumnsMode =
-                DataGridViewAutoSizeColumnsMode.Fill;
-
+            // Header Grid Style
+            dgvReview.ColumnHeadersHeight = 40;
+            dgvReview.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(240, 242, 245);
+            dgvReview.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             dgvReview.RowTemplate.Height = 35;
 
-            dgvReview.Font = new Font("Segoe UI", 10);
-
-            dgvReview.ColumnHeadersDefaultCellStyle.Font =
-                new Font("Segoe UI", 10, FontStyle.Bold);
-
-            // Copy columns
-            // Tạo cột
-            dgvReview.Columns.Add("TenMon", "Tên món");
+            dgvReview.Columns.Add("TenMon", "Món");
             dgvReview.Columns.Add("Size", "Size");
-            dgvReview.Columns.Add("SoLuong", "Số lượng");
-            dgvReview.Columns.Add("DonGia", "Đơn giá");
+            dgvReview.Columns.Add("SL", "SL");
+            dgvReview.Columns.Add("Gia", "Thành tiền");
 
-            // Load dữ liệu
+            dgvReview.Columns["SL"].FillWeight = 40;
+            dgvReview.Columns["Size"].FillWeight = 40;
+
             foreach (object[] item in gioHangRows)
             {
-                dgvReview.Rows.Add(
-                    item[0],
-                    item[1],
-                    item[2],
-                    string.Format("{0:N0} VNĐ", item[3])
-                );
+                dgvReview.Rows.Add(item[0], item[1], item[2], string.Format("{0:N0}", item[3]));
             }
 
-            Controls.Add(dgvReview);
+            pnlGridContainer.Controls.Add(dgvReview);
 
             // =========================
-            // FOOTER
+            // FOOTER - TỔNG TIỀN & NÚT
             // =========================
-            Panel pnlFoot = new Panel();
+            Panel pnlFoot = new Panel { Dock = DockStyle.Bottom, Height = 150, BackColor = Color.White, Padding = new Padding(25, 15, 25, 15) };
 
-            pnlFoot.Dock = DockStyle.Bottom;
+            // Đường kẻ ngăn cách mỏng
+            Panel line = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Color.FromArgb(224, 224, 224) };
 
-            pnlFoot.Height = 110;
+            lblTongTienFinal = new Label
+            {
+                Text = "Tổng cộng: " + string.Format("{0:N0} VNĐ", tongTien),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                ForeColor = COLOR_PRIMARY,
+                TextAlign = ContentAlignment.MiddleRight,
+                Dock = DockStyle.Top,
+                Height = 50
+            };
 
-            pnlFoot.Padding = new Padding(10);
-
-            lblTongTienFinal = new Label();
-
-            lblTongTienFinal.Text =
-                "Tổng cộng: " +
-                string.Format("{0:N0} VNĐ", tongTien);
-
-            lblTongTienFinal.Font =
-                new Font("Segoe UI", 16, FontStyle.Bold);
-
-            lblTongTienFinal.ForeColor = Color.Black;
-
-            lblTongTienFinal.TextAlign =
-                ContentAlignment.MiddleCenter;
-
-            lblTongTienFinal.Dock = DockStyle.Top;
-
-            lblTongTienFinal.Height = 40;
-
-            btnXacNhanIn = new Button();
-
-            btnXacNhanIn.Text = "XÁC NHẬN & IN";
-
-            btnXacNhanIn.BackColor =
-                Color.FromArgb(0, 100, 0);
-
-            btnXacNhanIn.ForeColor = Color.White;
-
-            btnXacNhanIn.Font =
-                new Font("Segoe UI", 11, FontStyle.Bold);
-
-            btnXacNhanIn.FlatStyle = FlatStyle.Flat;
-
+            btnXacNhanIn = new Button
+            {
+                Text = "XÁC NHẬN & IN HÓA ĐƠN",
+                BackColor = COLOR_ACCENT,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                FlatStyle = FlatStyle.Flat,
+                Dock = DockStyle.Bottom,
+                Height = 55,
+                Cursor = Cursors.Hand,
+                DialogResult = DialogResult.OK
+            };
             btnXacNhanIn.FlatAppearance.BorderSize = 0;
 
-            btnXacNhanIn.Size = new Size(220, 45);
+            pnlFoot.Controls.AddRange(new Control[] { lblTongTienFinal, line, btnXacNhanIn });
 
-            btnXacNhanIn.Location = new Point(80, 50);
+            // Thêm vào Form theo thứ tự
+            this.Controls.Add(pnlGridContainer);
+            this.Controls.Add(pnlHead);
+            this.Controls.Add(pnlFoot);
 
-            btnXacNhanIn.Cursor = Cursors.Hand;
-            btnXacNhanIn.DialogResult = DialogResult.OK;
-            AcceptButton = btnXacNhanIn;
+            this.AcceptButton = btnXacNhanIn;
+        }
 
-            pnlFoot.Controls.Add(lblTongTienFinal);
-
-            pnlFoot.Controls.Add(btnXacNhanIn);
-
-            Controls.Add(pnlFoot);
+        // Hàm tạo TextBox phong cách hiện đại
+        private TextBox CreateStyledTextBox(string placeholder, Point loc, int width)
+        {
+            return new TextBox
+            {
+                Text = placeholder,
+                Location = loc,
+                Width = width,
+                Font = new Font("Segoe UI", 12),
+                BorderStyle = BorderStyle.FixedSingle,
+            };
         }
 
         // =========================
         // GETTERS
         // =========================
-        public string GetTenKhach()
-        {
-            return txtTenKhach.Text.Trim();
-        }
+        public string GetTenKhach() => txtTenKhach.Text.Trim();
+        public string GetSDT() => txtSDT.Text.Trim();
+        public Button GetBtnXacNhanIn() => btnXacNhanIn;
 
-        public string GetSDT()
-        {
-            return txtSDT.Text.Trim();
-        }
-
-        public Button GetBtnXacNhanIn()
-        {
-            return btnXacNhanIn;
-        }
-
-        // =========================
-        // EVENT
-        // =========================
         public void AddXacNhanListener(EventHandler ev)
         {
             btnXacNhanIn.Click += ev;
