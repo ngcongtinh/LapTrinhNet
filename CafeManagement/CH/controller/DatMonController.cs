@@ -112,8 +112,11 @@ namespace CH.controller
 
             List<MonAn> list = menuDao.GetAll();
 
-            string keyword =
-                view.GetTxtSearch().Text.Trim();
+            string keyword = view.GetTxtSearch().Text.Trim();
+            if (keyword == "🔍 Tìm kiếm món ăn..." || keyword.Contains("🔍"))
+            {
+                keyword = "";
+            }
 
             string danhMuc =
                 view.GetCbDanhMuc().SelectedItem != null
