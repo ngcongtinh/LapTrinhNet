@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
@@ -290,15 +290,17 @@ namespace CH.controller
 
                 string sqlHD =
                     "INSERT INTO HoaDon " +
-                    "(MaHD, TenNV, TenKH, NgayLap, TongTien) " +
-                    "VALUES (@mahd,@tennv,@tenkh,@ngaylap,@tongtien)";
+                    "(MaHD, MaNV, MaKH, NgayLap, TongTien) " +
+                    "VALUES (@mahd, " +
+                    "(SELECT MaNV FROM NhanVien WHERE TenNV = @tennv LIMIT 1), " +
+                    "@makh, @ngaylap, @tongtien)";
 
                 MySqlCommand cmdHD =
                     new MySqlCommand(sqlHD, conn, trans);
 
                 cmdHD.Parameters.AddWithValue("@mahd", maHD);
                 cmdHD.Parameters.AddWithValue("@tennv", Session.TenNV);
-                cmdHD.Parameters.AddWithValue("@tenkh", tenKhach);
+                cmdHD.Parameters.AddWithValue("@makh", string.IsNullOrEmpty(maKH) ? (object)DBNull.Value : maKH);
                 cmdHD.Parameters.AddWithValue("@ngaylap", ngayLap);
                 cmdHD.Parameters.AddWithValue("@tongtien", currentTotal);
 
@@ -307,8 +309,8 @@ namespace CH.controller
                 // ================= CHI TIẾT HÓA ĐƠN =================
                 string sqlCT =
                     "INSERT INTO ChiTietHoaDon " +
-                    "(MaHD, TenMon, Size, SoLuong, DonGia) " +
-                    "VALUES (@mahd,@tenmon,@size,@soluong,@dongia)";
+                    "(MaHD, MaMon, Size, SoLuong, DonGia) " +
+                    "VALUES (@mahd, (SELECT MaMon FROM ThucDon WHERE TenMon = @tenmon LIMIT 1), @size, @soluong, @dongia)";
 
                 foreach (object[] item in view.GetCartData())
                 {

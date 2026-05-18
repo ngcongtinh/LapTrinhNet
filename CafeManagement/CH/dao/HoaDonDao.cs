@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CafeManagement.CH.dao;
 using CH.Model;
@@ -19,7 +19,16 @@ namespace CH.dao
             {
                 MySqlConnection cons = DBConnection.GetConnection();
 
-                string sql = "SELECT * FROM HoaDon ORDER BY MaHD DESC";
+                string sql = @"
+                SELECT h.MaHD,
+                       nv.TenNV,
+                       kh.TenKH,
+                       h.NgayLap,
+                       h.TongTien
+                FROM HoaDon h
+                LEFT JOIN NhanVien nv ON h.MaNV = nv.MaNV
+                LEFT JOIN KhachHang kh ON h.MaKH = kh.MaKH
+                ORDER BY h.MaHD DESC";
 
                 MySqlCommand cmd = new MySqlCommand(sql, cons);
 
@@ -60,7 +69,16 @@ namespace CH.dao
             {
                 MySqlConnection cons = DBConnection.GetConnection();
 
-                string sql = "SELECT * FROM ChiTietHoaDon WHERE MaHD=@maHD";
+                string sql = @"
+                SELECT ct.ID,
+                       ct.MaHD,
+                       t.TenMon,
+                       ct.SoLuong,
+                       ct.DonGia,
+                       ct.Size
+                FROM ChiTietHoaDon ct
+                LEFT JOIN ThucDon t ON ct.MaMon = t.MaMon
+                WHERE ct.MaHD=@maHD";
 
                 MySqlCommand cmd = new MySqlCommand(sql, cons);
 
@@ -101,9 +119,12 @@ namespace CH.dao
                 MySqlConnection cons = DBConnection.GetConnection();
 
                 string sql = @"INSERT INTO HoaDon
-                (MaHD, TenNV, TenKH, NgayLap, TongTien)
+                (MaHD, MaNV, MaKH, NgayLap, TongTien)
                 VALUES
-                (@MaHD, @TenNV, @TenKH, @NgayLap, @TongTien)";
+                (@MaHD, 
+                 (SELECT MaNV FROM NhanVien WHERE TenNV = @TenNV LIMIT 1), 
+                 (SELECT MaKH FROM KhachHang WHERE TenKH = @TenKH LIMIT 1), 
+                 @NgayLap, @TongTien)";
 
                 MySqlCommand cmd = new MySqlCommand(sql, cons);
 
@@ -136,8 +157,8 @@ namespace CH.dao
                 MySqlConnection cons = DBConnection.GetConnection();
 
                 string sql = @"UPDATE HoaDon
-                SET TenNV=@TenNV,
-                    TenKH=@TenKH,
+                SET MaNV=(SELECT MaNV FROM NhanVien WHERE TenNV = @TenNV LIMIT 1),
+                    MaKH=(SELECT MaKH FROM KhachHang WHERE TenKH = @TenKH LIMIT 1),
                     NgayLap=@NgayLap
                 WHERE MaHD=@MaHD";
 
@@ -207,31 +228,31 @@ namespace CH.dao
                 if (count == 0)
                 {
                     cmd = new MySqlCommand(
-                        "INSERT INTO HoaDon VALUES ('HD001', 'Nguyễn Văn A', 'Trần Thị B', '01/12/2025', 130000)",
+                        "INSERT INTO HoaDon (MaHD, MaNV, MaKH, NgayLap, TongTien) VALUES ('HD001', 'NV01', 'KH01', '01/12/2025', 130000)",
                         cons
                     );
                     cmd.ExecuteNonQuery();
 
                     cmd = new MySqlCommand(
-                        "INSERT INTO HoaDon VALUES ('HD002', 'Lê Văn C', 'Khách vãng lai', '02/12/2025', 20000)",
+                        "INSERT INTO HoaDon (MaHD, MaNV, MaKH, NgayLap, TongTien) VALUES ('HD002', 'NV01', 'KH02', '02/12/2025', 20000)",
                         cons
                     );
                     cmd.ExecuteNonQuery();
 
                     cmd = new MySqlCommand(
-                        "INSERT INTO ChiTietHoaDon(MaHD, TenMon, Size, SoLuong, DonGia) VALUES ('HD001', 'Gà rán', 'S', 2, 35000)",
+                        "INSERT INTO ChiTietHoaDon(MaHD, MaMon, Size, SoLuong, DonGia) VALUES ('HD001', 'M01', 'S', 2, 35000)",
                         cons
                     );
                     cmd.ExecuteNonQuery();
 
                     cmd = new MySqlCommand(
-                        "INSERT INTO ChiTietHoaDon(MaHD, TenMon, Size, SoLuong, DonGia) VALUES ('HD001', 'Khoai tây chiên', 'M', 1, 60000)",
+                        "INSERT INTO ChiTietHoaDon(MaHD, MaMon, Size, SoLuong, DonGia) VALUES ('HD001', 'M03', 'M', 1, 60000)",
                         cons
                     );
                     cmd.ExecuteNonQuery();
 
                     cmd = new MySqlCommand(
-                        "INSERT INTO ChiTietHoaDon(MaHD, TenMon, Size, SoLuong, DonGia) VALUES ('HD002', 'Pepsi', 'S', 2, 10000)",
+                        "INSERT INTO ChiTietHoaDon(MaHD, MaMon, Size, SoLuong, DonGia) VALUES ('HD002', 'M02', 'S', 2, 10000)",
                         cons
                     );
                     cmd.ExecuteNonQuery();

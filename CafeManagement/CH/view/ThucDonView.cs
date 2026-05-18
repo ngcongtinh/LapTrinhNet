@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using CH.Model;
-using MySqlX.XDevAPI.Relational;
 
 namespace CH.View
 {

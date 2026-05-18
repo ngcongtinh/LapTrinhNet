@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CafeManagement.CH.dao;
 using CH.Model;
@@ -20,13 +20,14 @@ namespace CH.dao
                 MySqlConnection cons = DBConnection.GetConnection();
 
                 string sql = @"
-                SELECT MaMon,
-                       TenMon,
-                       DonGia,
-                       DonViTinh,
-                       TenDanhMuc,
-                       HinhAnh
-                FROM ThucDon";
+                SELECT t.MaMon,
+                       t.TenMon,
+                       t.DonGia,
+                       t.DonViTinh,
+                       d.TenDanhMuc,
+                       t.HinhAnh
+                FROM ThucDon t
+                LEFT JOIN DanhMuc d ON t.MaDanhMuc = d.MaDanhMuc";
 
                 MySqlCommand cmd = new MySqlCommand(sql, cons);
 
@@ -66,9 +67,9 @@ namespace CH.dao
 
                 string sql = @"
                 INSERT INTO ThucDon
-                (MaMon, TenMon, DonGia, DonViTinh, TenDanhMuc, HinhAnh)
+                (MaMon, TenMon, DonGia, DonViTinh, MaDanhMuc, HinhAnh)
                 VALUES
-                (@MaMon, @TenMon, @DonGia, @DonViTinh, @TenDanhMuc, @HinhAnh)";
+                (@MaMon, @TenMon, @DonGia, @DonViTinh, (SELECT MaDanhMuc FROM DanhMuc WHERE TenDanhMuc = @TenDanhMuc LIMIT 1), @HinhAnh)";
 
                 MySqlCommand cmd = new MySqlCommand(sql, cons);
 
@@ -106,7 +107,7 @@ namespace CH.dao
                 SET TenMon=@TenMon,
                     DonGia=@DonGia,
                     DonViTinh=@DonViTinh,
-                    TenDanhMuc=@TenDanhMuc,
+                    MaDanhMuc=(SELECT MaDanhMuc FROM DanhMuc WHERE TenDanhMuc = @TenDanhMuc LIMIT 1),
                     HinhAnh=@HinhAnh
                 WHERE MaMon=@MaMon";
 
@@ -239,14 +240,15 @@ namespace CH.dao
                 MySqlConnection cons = DBConnection.GetConnection();
 
                 string sql = @"
-                SELECT MaMon,
-                       TenMon,
-                       DonGia,
-                       DonViTinh,
-                       TenDanhMuc,
-                       HinhAnh
-                FROM ThucDon
-                WHERE MaMon=@MaMon";
+                SELECT t.MaMon,
+                       t.TenMon,
+                       t.DonGia,
+                       t.DonViTinh,
+                       d.TenDanhMuc,
+                       t.HinhAnh
+                FROM ThucDon t
+                LEFT JOIN DanhMuc d ON t.MaDanhMuc = d.MaDanhMuc
+                WHERE t.MaMon=@MaMon";
 
                 MySqlCommand cmd = new MySqlCommand(sql, cons);
 

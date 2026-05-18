@@ -1,23 +1,34 @@
-﻿using System;
+using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 
 namespace CafeManagement.CH.dao
 {
     public class DBConnection
     {
-        private static readonly string HOST = "localhost";
-        private static readonly string PORT = "3306";
-        private static readonly string DB_NAME = "quanlycuahang2";
-        private static readonly string USER = "root";
-        private static readonly string PASS = "123456";
+        private static IConfigurationRoot _configuration;
+        private static string _connectionString;
 
-        // Kết nối Server MySQL
-        private static readonly string SERVER_CONNECTION =
-            $"server={HOST};port={PORT};user={USER};password={PASS};";
+        static DBConnection()
+        {
+            try
+            {
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                _configuration = builder.Build();
+                _connectionString = _configuration.GetConnectionString("DefaultConnection");
+                Console.WriteLine(">>> Loaded Connection String: " + System.Text.RegularExpressions.Regex.Replace(_connectionString, "Password=[^;]+", "Password=******", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(">>> Error loading appsettings.json: " + ex.Message);
+            }
+        }
 
         // Kết nối Database
-        private static readonly string DB_CONNECTION =
-            $"server={HOST};port={PORT};database={DB_NAME};user={USER};password={PASS};charset=utf8;";
+        private static string DB_CONNECTION => _connectionString;
 
         // =======================================================
         // 1. KẾT NỐI DATABASE
@@ -30,10 +41,11 @@ namespace CafeManagement.CH.dao
             {
                 cons = new MySqlConnection(DB_CONNECTION);
                 cons.Open();
+                // Console.WriteLine(">>> Database Connected Successfully.");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(">>> Database Connection Failed: " + e.Message);
             }
 
             return cons;
@@ -44,32 +56,43 @@ namespace CafeManagement.CH.dao
         // =======================================================
         public static void InitializeDatabase()
         {
+            Console.WriteLine("--- Bat dau khoi tao Database ---");
             try
             {
                 // =======================================================
-                // 1. TẠO DATABASE
+                // 1. KẾT NỐI DATABASE VÀ TỰ ĐỘNG TẠO DB NẾU CHƯA CÓ
                 // =======================================================
-
-                MySqlConnection serverConn = new MySqlConnection(SERVER_CONNECTION);
-                serverConn.Open();
-
-                MySqlCommand serverCmd = new MySqlCommand(
-                    $"CREATE DATABASE IF NOT EXISTS {DB_NAME}",
-                    serverConn
-                );
-
-                serverCmd.ExecuteNonQuery();
-
-                Console.WriteLine("Kiem tra Database: " + DB_NAME);
-
-                serverConn.Close();
-
-                // =======================================================
-                // 2. KẾT NỐI DATABASE
-                // =======================================================
+                var connStringBuilder = new MySqlConnectionStringBuilder(DB_CONNECTION);
+                string dbName = connStringBuilder.Database;
+                
+                // Tạo kết nối tạm không chỉ định DB để tạo DB nếu chưa tồn tại
+                connStringBuilder.Database = "";
+                using (var tempConn = new MySqlConnection(connStringBuilder.ConnectionString))
+                {
+                    tempConn.Open();
+                    using (var createCmd = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS {dbName}", tempConn))
+                    {
+                        createCmd.ExecuteNonQuery();
+                    }
+                }
 
                 MySqlConnection dbConn = new MySqlConnection(DB_CONNECTION);
                 dbConn.Open();
+                Console.WriteLine("Ket noi thanh cong den MySQL.");
+
+                // DROP TABLE IF EXISTS to force schema migration to normalized version
+                // string dropSql = "DROP TABLE IF EXISTS ChiTietHoaDon, HoaDon, ThucDon, DanhMuc, Kho, KhachHang, NhanVien;";
+                // using (var dropCmd = new MySqlCommand(dropSql, dbConn))
+                // {
+                //     dropCmd.ExecuteNonQuery();
+                //     Console.WriteLine(">>> Dropped old tables to upgrade to normalized schema with Foreign Keys.");
+                // }
+
+                // Clean up warehouse table (Kho) as requested
+                using (var dropCmd = new MySqlCommand("DROP TABLE IF EXISTS Kho;", dbConn))
+                {
+                    dropCmd.ExecuteNonQuery();
+                }
 
                 MySqlCommand dbCmd;
 
@@ -112,21 +135,7 @@ namespace CafeManagement.CH.dao
                 dbCmd = new MySqlCommand(sqlKhachHang, dbConn);
                 dbCmd.ExecuteNonQuery();
 
-                // =======================================================
-                // TẠO BẢNG KHO
-                // =======================================================
 
-                string sqlKho = @"
-                CREATE TABLE IF NOT EXISTS Kho (
-                    MaHH VARCHAR(20) PRIMARY KEY,
-                    TenHH VARCHAR(100),
-                    SoLuong INT,
-                    GiaNhap DOUBLE,
-                    GiaBan DOUBLE
-                )";
-
-                dbCmd = new MySqlCommand(sqlKho, dbConn);
-                dbCmd.ExecuteNonQuery();
 
                 // =======================================================
                 // TẠO BẢNG DANHMUC
@@ -142,7 +151,7 @@ namespace CafeManagement.CH.dao
                 dbCmd.ExecuteNonQuery();
 
                 // =======================================================
-                // TẠO BẢNG THUCDON
+                // TẠO BẢNG THUCDON (Liên kết Khóa Ngoại tới DanhMuc)
                 // =======================================================
 
                 string sqlThucDon = @"
@@ -152,41 +161,45 @@ namespace CafeManagement.CH.dao
                     DonGia DOUBLE,
                     DonViTinh VARCHAR(20),
                     HinhAnh VARCHAR(255),
-                    TenDanhMuc VARCHAR(100)
+                    MaDanhMuc VARCHAR(20),
+                    FOREIGN KEY (MaDanhMuc) REFERENCES DanhMuc(MaDanhMuc) ON DELETE SET NULL
                 )";
 
                 dbCmd = new MySqlCommand(sqlThucDon, dbConn);
                 dbCmd.ExecuteNonQuery();
 
                 // =======================================================
-                // TẠO BẢNG HOADON
+                // TẠO BẢNG HOADON (Liên kết Khóa Ngoại tới NhanVien và KhachHang)
                 // =======================================================
 
                 string sqlHoaDon = @"
                 CREATE TABLE IF NOT EXISTS HoaDon (
                     MaHD VARCHAR(20) PRIMARY KEY,
-                    TenNV VARCHAR(100),
-                    TenKH VARCHAR(100),
+                    MaNV VARCHAR(20),
+                    MaKH VARCHAR(20),
                     NgayLap VARCHAR(20),
-                    TongTien DOUBLE
+                    TongTien DOUBLE,
+                    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV) ON DELETE SET NULL,
+                    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH) ON DELETE SET NULL
                 )";
 
                 dbCmd = new MySqlCommand(sqlHoaDon, dbConn);
                 dbCmd.ExecuteNonQuery();
 
                 // =======================================================
-                // TẠO BẢNG CHITIETHOADON
+                // TẠO BẢNG CHITIETHOADON (Liên kết Khóa Ngoại tới HoaDon và ThucDon)
                 // =======================================================
 
                 string sqlCTHD = @"
                 CREATE TABLE IF NOT EXISTS ChiTietHoaDon (
                     ID INT AUTO_INCREMENT PRIMARY KEY,
                     MaHD VARCHAR(20),
-                    TenMon VARCHAR(100),
+                    MaMon VARCHAR(20),
                     SoLuong INT,
                     DonGia DOUBLE,
                     Size VARCHAR(5),
-                    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD) ON DELETE CASCADE
+                    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD) ON DELETE CASCADE,
+                    FOREIGN KEY (MaMon) REFERENCES ThucDon(MaMon) ON DELETE SET NULL
                 )";
 
                 dbCmd = new MySqlCommand(sqlCTHD, dbConn);
@@ -196,7 +209,7 @@ namespace CafeManagement.CH.dao
                 // DỮ LIỆU MẪU NHÂN VIÊN
                 // =======================================================
 
-                string checkNV = "SELECT COUNT(*) FROM NhanVien";
+                string checkNV = "SELECT COUNT(*) FROM NhanVien WHERE Username = 'admin'";
 
                 dbCmd = new MySqlCommand(checkNV, dbConn);
 
@@ -205,40 +218,69 @@ namespace CafeManagement.CH.dao
                 if (countNV == 0)
                 {
                     string insertNV = @"
-                    INSERT INTO NhanVien VALUES
-                    ('NV01','Admin','01/01/1990','Nam','Quan ly','0901','HN','admin','123','ADMIN'),
-
-                    ('NV02','Staff','01/01/2000','Nu','Nhan vien','0902','HCM','staff','123','NHÂN VIÊN')
+                    INSERT INTO NhanVien (MaNV, TenNV, NgaySinh, GioiTinh, ChucVu, SoDienThoai, DiaChi, Username, Password, Role)
+                    VALUES ('NV01','Admin','01/01/1990','Nam','Quan ly','0901','HN','admin','123','ADMIN')
                     ";
 
                     dbCmd = new MySqlCommand(insertNV, dbConn);
                     dbCmd.ExecuteNonQuery();
+                    Console.WriteLine(">>> Created admin: admin / 123");
+                }
+                else
+                {
+                    string updatePass = "UPDATE NhanVien SET Password = '123' WHERE Username = 'admin'";
+                    dbCmd = new MySqlCommand(updatePass, dbConn);
+                    dbCmd.ExecuteNonQuery();
+                    Console.WriteLine(">>> Verified admin account.");
                 }
 
                 // =======================================================
-                // DỮ LIỆU MẪU KHO
+                // DỮ LIỆU MẪU DANH MỤC
                 // =======================================================
 
-                string checkKho = "SELECT COUNT(*) FROM Kho";
+                string checkDM = "SELECT COUNT(*) FROM DanhMuc";
 
-                dbCmd = new MySqlCommand(checkKho, dbConn);
+                dbCmd = new MySqlCommand(checkDM, dbConn);
 
-                int countKho = Convert.ToInt32(dbCmd.ExecuteScalar());
+                int countDM = Convert.ToInt32(dbCmd.ExecuteScalar());
 
-                if (countKho == 0)
+                if (countDM == 0)
                 {
-                    string insertKho = @"
-                    INSERT INTO Kho VALUES
-                    ('HH01','Ca phe',100,10000,0),
-
-                    ('HH02','Tra sua',100,15000,0),
-
-                    ('HH03','Banh',100,20000,0)
+                    string insertDM = @"
+                    INSERT INTO DanhMuc (MaDanhMuc, TenDanhMuc) VALUES
+                    ('Nuoc', 'Nuoc'),
+                    ('Do an', 'Do an')
                     ";
 
-                    dbCmd = new MySqlCommand(insertKho, dbConn);
+                    dbCmd = new MySqlCommand(insertDM, dbConn);
                     dbCmd.ExecuteNonQuery();
+                    Console.WriteLine(">>> Created sample categories.");
                 }
+
+                // =======================================================
+                // DỮ LIỆU MẪU KHÁCH HÀNG
+                // =======================================================
+
+                string checkKH = "SELECT COUNT(*) FROM KhachHang";
+
+                dbCmd = new MySqlCommand(checkKH, dbConn);
+
+                int countKH = Convert.ToInt32(dbCmd.ExecuteScalar());
+
+                if (countKH == 0)
+                {
+                    string insertKH = @"
+                    INSERT INTO KhachHang (MaKH, TenKH, TheLoai, GioiTinh, SoDienThoai) VALUES
+                    ('KH01', 'Trần Thị B', 'Thường', 'Nữ', '0902'),
+                    ('KH02', 'Khách vãng lai', 'Vãng lai', 'Khác', '0903')
+                    ";
+
+                    dbCmd = new MySqlCommand(insertKH, dbConn);
+                    dbCmd.ExecuteNonQuery();
+                    Console.WriteLine(">>> Created sample customers.");
+                }
+
+
 
                 // =======================================================
                 // DỮ LIỆU MẪU THỰC ĐƠN
@@ -254,18 +296,25 @@ namespace CafeManagement.CH.dao
                 {
                     string insertMenu = @"
                     INSERT INTO ThucDon
-                    (MaMon,TenMon,DonGia,DonViTinh,HinhAnh,TenDanhMuc)
+                    (MaMon,TenMon,DonGia,DonViTinh,HinhAnh,MaDanhMuc)
                     VALUES
-
-                    ('M01','Ca phe den',20000,'Ly','','Nuoc'),
-
-                    ('M02','Tra sua',30000,'Ly','','Nuoc'),
-
-                    ('M03','Banh ngot',25000,'Cai','','Do an')
+                    ('M01','Ca phe den',20000,'Ly','https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500','Nuoc'),
+                    ('M02','Tra sua',30000,'Ly','https://images.unsplash.com/photo-1552611052-33e04de081de?w=500','Nuoc'),
+                    ('M03','Banh ngot',25000,'Cai','https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500','Do an')
                     ";
 
                     dbCmd = new MySqlCommand(insertMenu, dbConn);
                     dbCmd.ExecuteNonQuery();
+                }
+                else
+                {
+                    string updateImg = @"
+                    UPDATE ThucDon SET HinhAnh = 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500' WHERE MaMon = 'M01';
+                    UPDATE ThucDon SET HinhAnh = 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=500' WHERE MaMon = 'M02';
+                    UPDATE ThucDon SET HinhAnh = 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500' WHERE MaMon = 'M03';";
+                    dbCmd = new MySqlCommand(updateImg, dbConn);
+                    dbCmd.ExecuteNonQuery();
+                    Console.WriteLine(">>> Updated images for existing products.");
                 }
 
                 Console.WriteLine("Khoi tao Database thanh cong!");
